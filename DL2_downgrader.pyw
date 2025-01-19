@@ -4,21 +4,6 @@ import os
 import platform
 import shutil
 import tempfile
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-from tkinterdnd2 import TkinterDnD, DND_FILES
-import zipfile
-import pyunpack
-import patoolib
-import rarfile
-import threading
-import webbrowser
-from distutils.dir_util import copy_tree
-
-
-
-# Constants for file path storage
-DOWNLOAD_PATH_FILE = "download_path.txt"
 
 # Function to install required packages
 def install_requirements():
@@ -36,25 +21,112 @@ def install_requirements():
         except subprocess.CalledProcessError:
             print(f"Error installing package: {package}")
             sys.exit(1)
-
 # Install required packages before running the main script
 install_requirements()
 
-# Function to create a junction link
-def create_junction_link(source, link_name):
-    if platform.system() == "Windows":
-        command = f'mklink /J "{link_name}" "{source}"'
-        result = os.system(command)
-        if result == 0:
-            print(f"Junction link created: {link_name} -> {source}")
-        else:
-            print(f"Failed to create junction link.")
-    else:
-        try:
-            os.symlink(source, link_name)
-            print(f"Symlink created: {link_name} -> {source}")
-        except Exception as e:
-            print(f"Error creating symlink: {e}")
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+from tkinterdnd2 import TkinterDnD, DND_FILES
+import zipfile
+import pyunpack
+import patoolib
+import rarfile
+import threading
+import webbrowser
+from distutils.dir_util import copy_tree
+from pathlib import Path
+
+
+
+# Get the current directory of the Python script
+script_dir = os.path.dirname(os.path.realpath(__file__))
+# Construct the full path to xdelta.exe in the same directory as the script
+xdelta_path = os.path.join(script_dir, "xdelta.exe")
+print(xdelta_path)
+
+# Constants for file path storage
+DOWNLOAD_PATH_FILE = "download_path.txt"
+
+
+
+
+def apply_patch():
+    # Ask the user to select a ZIP file
+    zip_file = filedialog.askopenfilename(filetypes=[("ZIP Files", "*.zip")])
+
+    if not zip_file:
+        messagebox.showerror("Error", "No ZIP file selected.")
+        return
+
+    # Create a temporary directory to extract files
+    extract_dir = os.path.join(os.path.dirname(zip_file), "extracted")
+    os.makedirs(extract_dir, exist_ok=True)
+
+    try:
+        # Extract the ZIP file
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall(extract_dir)
+
+        # Locate the text file with parameters (assuming the text file is inside the ZIP)
+        txt_file = None
+        for file in os.listdir(extract_dir):
+            if file.endswith(".txt"):
+                txt_file = os.path.join(extract_dir, file)
+                break
+
+        if not txt_file:
+            messagebox.showerror("Error", "No text file found inside the ZIP.")
+            return
+
+        # Read the text file to get the paths
+        with open(txt_file, 'r') as file:
+            lines = file.readlines()
+
+        if len(lines) % 3 != 0:
+            messagebox.showerror("Error", "The text file is not formatted correctly. It should have multiples of 3 lines.")
+            return
+
+        # Loop through the lines in chunks of 3
+        for i in range(0, len(lines), 3):
+            block = [lines[i].strip(), lines[i+1].strip(), lines[i+2].strip()]
+
+            # Extract and clean up the paths
+            original_file = Path(download_path.get()) / block[0].split("=")[1].strip().lstrip('\\')
+            patch_file = Path(txt_file).parent / block[1].split("=")[1].strip().lstrip('\\')
+            output_file = Path(download_path.get()) / block[2].split("=")[1].strip().lstrip('\\')
+
+            # Check if the necessary files exist if not then don't die just error msg
+            if not os.path.isfile(original_file):
+                messagebox.showerror("Error", f"Original file not found: {original_file}")
+                return
+            if not os.path.isfile(patch_file):
+                messagebox.showerror("Error", f"Patch file not found: {patch_file}")
+                return
+
+            # Path to xdelta.exe
+            xdelta_path = "xdelta.exe"
+
+            # Run the xdelta patching process should work(does work)
+            subprocess.run(
+                [str(xdelta_path), "-d", "-f", "-s", str(original_file), str(patch_file), str(output_file)],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+
+            messagebox.showinfo("Success", f"Patch applied successfully. Output saved to {output_file}")
+
+    except subprocess.CalledProcessError as e:
+        messagebox.showerror("Error", f"Failed to apply patch. Error: {e.stderr.decode()}")
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
+    finally:
+        # Cleanup extracted files
+        for root, dirs, files in os.walk(extract_dir, topdown=False):
+            for file in files:
+                os.remove(os.path.join(root, file))
+            for dir in dirs:
+                os.rmdir(os.path.join(root, dir))
+        os.rmdir(extract_dir)
+
 
 def open_nexus():
     webbrowser.open("https://www.nexusmods.com/dyinglight2/mods/1573")
@@ -130,7 +202,6 @@ def apply_patch1():
     target_path = os.path.join(download_path.get(), 'ph', 'work', 'bin', 'x64')
     os.makedirs(target_path, exist_ok=True)  # Ensure the directory exists
     steam_appid_path = os.path.join(target_path, 'steam_appid.txt')
-
     try:
         with open(steam_appid_path, 'w') as file:
             file.write("534380")
@@ -185,7 +256,7 @@ def get_archive_size(archive_file):
 
 # Function to display the initial information window
 def show_initial_message():
-    messagebox.showinfo("Extraction in Progress", "Extraction may take several minutes. You will receive a confirmation window when it is done.Please be patient much love from: Idkman")
+    messagebox.showinfo("Extraction in Progress", "Extraction may take several minutes. You will receive a confirmation window when it is done.\nPlease be patient much love from: Idkman")
 
 
 def extract_and_move(archive_file):
@@ -304,9 +375,6 @@ or email me at dev.idkman@gmail.com
 """
     messagebox.showinfo("Made By", made_by_text)
 
-def open_link(event):
-    webbrowser.open("https://www.nexusmods.com/dyinglight2/mods/1573")
-
 
 def show_tutorial():
     tutorial_text = """
@@ -373,6 +441,8 @@ def create_toolbar():
 
     discord_link_button = ttk.Button(toolbar, text="Discord Server", command=discord_link, width=21)
     discord_link_button.grid(row=0, column=5, padx=5)
+
+
 
 # Main GUI setup
 root = TkinterDnD.Tk()
@@ -498,6 +568,10 @@ temp_folder_entry.pack(pady=5)
 # Button to select temporary folder
 temp_folder_button = ttk.Button(frame3, text="Set Temporary Archive Folder", command=select_temp_folder)
 temp_folder_button.pack(pady=5)
+
+# Button for the patch button crazy right? yeah I lost all my common sense
+patch_button = ttk.Button(frame2, text="Apply Patch", command=apply_patch)
+patch_button.pack(pady=20)
 
 extract_button = ttk.Button(frame3, text="Extract Archive File", state=tk.DISABLED)
 extract_button.pack(anchor="center",pady=20)

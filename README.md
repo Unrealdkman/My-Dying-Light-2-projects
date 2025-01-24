@@ -6,19 +6,11 @@ Features
     Dying Light 2 Downgrade: Downgrade your game to version 1.12.1 by manually downloading the necessary depots.
     E3 Definitive Mod Installation: Extract and apply the E3 Definitive Mod with ease.
 
-Installation
+Installation/Downgrade Dying Light 2:
 
-    Download the executable from the release page.
-    Run the EXE file and follow the instructions.
-    The tool will:
-        Prompt you to press "Download Depot 1" through "Download Depot 5" for the Dying Light 2 downgrade.
-        Ask for your Steam login (handled by steamctl). No data is relayed to any server, ensuring privacy and security.
+After launching the tool, press on the button "Install steamctl" as it is a function I have to invoke
 
-Usage
-
-Downgrade Dying Light 2:
-
-After launching the tool, press Download Depot 1 through Download Depot 5 to start the downgrade process.
+press Download Depot 1 through Download Depot 5 to start the downgrade process.
 
 Once complete, steamctl will prompt for your Steam login. This login is handled locally and does not interact with external servers.
 

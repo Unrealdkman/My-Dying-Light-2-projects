@@ -1,4 +1,4 @@
-My projects need python to be installed so
+My projects need python to be edited so
 
 Open microsoft store
 

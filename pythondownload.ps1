@@ -1,0 +1,1 @@
+ Start-Process powershell -Verb runAs -ArgumentList "Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe' -OutFile 'c:/python-3.10.0-amd64.exe'; Start-Process -NoNewWindow -Wait -FilePath 'c:/python-3.10.0-amd64.exe' -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1 Include_test=0'"

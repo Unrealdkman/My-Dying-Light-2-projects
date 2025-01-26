@@ -12,7 +12,7 @@ After launching the tool, press on the button "Install steamctl" as it is a func
 
 press Download Depot 1 through Download Depot 5 to start the downgrade process.
 
-Once complete, steamctl will prompt for your Steam login. This login is handled locally and does not interact with external servers.
+Once complete, steamctl will prompt for your Steam login. This login is handled locally and does not interact with external servers, only with steam but duh you use steam lmao, so yeah nothing is being stolen and never will be.
 
 Install E3 Definitive Mod:
 Click on "Select Archive"
